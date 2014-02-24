@@ -3,7 +3,7 @@ var app = express();
 
 var client = '762489067147-pl5ejenj16n0ktk01mlbouv69v6ejtsj.apps.googleusercontent.com';
 var secret = '9KiyTCNxpgXBsEHZ1fDUhQI6';
-var redirect = 'http://localhost:3000/oauth2callback';
+var redirect = 'http://mysterious-citadel-5909.herokuapp.com/oauth2callback';
 
 var https = require('https');
 var url = require('url');
