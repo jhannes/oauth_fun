@@ -1,9 +1,8 @@
 var express = require('express');
 var app = express();
 
-var client = '762489067147-pl5ejenj16n0ktk01mlbouv69v6ejtsj.apps.googleusercontent.com';
-var secret = '9KiyTCNxpgXBsEHZ1fDUhQI6';
-var redirect = 'http://mysterious-citadel-5909.herokuapp.com/oauth2callback';
+var oauth_settings = require('./oauth_settings');
+
 
 var https = require('https');
 var url = require('url');
@@ -34,8 +33,8 @@ var https_request = function(options, callback) {
 var auth_url = function() {
 	var parts = url.parse('https://accounts.google.com/o/oauth2/auth', true);
 	parts.query['response_type'] = 'code';
-	parts.query['client_id'] = client;
-	parts.query['redirect_uri'] = redirect;
+	parts.query['client_id'] = oauth_settings.client_id;
+	parts.query['redirect_uri'] = oauth_settings.redirect_uri;
 	parts.query['scope'] = 'profile email';
 	return url.format(parts);
 }
@@ -68,9 +67,9 @@ app.get('/oauth2callback', function(req, res) {
 
 	var post_params = {
 		code: code,
-		client_id: client,
-		client_secret: secret,
-		redirect_uri: redirect,
+		client_id: oauth_settings.client_id,
+		client_secret: oauth_settings.client_secret,
+		redirect_uri: oauth_settings.redirect_uri,
 		grant_type: 'authorization_code',
 	};
 
