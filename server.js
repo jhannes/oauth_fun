@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 
 var oauth_settings = require('./oauth_settings');
+var decode_token = require('./decode_token');
 
 
 var https = require('https');
@@ -42,13 +43,18 @@ var auth_url = function() {
 app.get('/', function(req, res) {
 	var locals = { title: 'This is a sample app', oauth_url: auth_url() };
 
-	if (req.session['authentication'] && req.session['authentication']["access_token"]) {
+	if (req.session['authentication'] && req.session['authentication']['id_token']) {
+ 		var id_token = decode_token(req.session['authentication']['id_token']);
+ 		locals['title'] = 'Authenticated as ' + id_token.payload.email
+ 		    + (id_token.payload.email_verified ? ' (verified)' : ' (not verified)');
+ 		res.render('index.jade', locals);
+	} else if (req.session['authentication'] && req.session['authentication']['access_token']) {
 		var request = https_request({
 			hostname: 'www.googleapis.com',
 			path: '/plus/v1/people/me',
 			headers: { 'Authorization': "Bearer " + req.session['authentication']["access_token"] }
 		 }, function(response_data) {
-	 		console.log(response_data);
+	 		console.log('/plug/v1/people/me response', response_data);
 	 		var response_object = JSON.parse(response_data);
 			locals['title'] = 'Authenticated as ' + response_object['displayName'];
 			res.render('index.jade', locals);		
@@ -62,7 +68,7 @@ app.get('/', function(req, res) {
 
 app.get('/oauth2callback', function(req, res) {
 	var parts = url.parse(req.url, true);
-	console.log(req.url);
+	console.log('/oauth2callback url', req.url);
 	var code = parts.query['code'];
 
 	var post_params = {
@@ -79,9 +85,15 @@ app.get('/oauth2callback', function(req, res) {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
 	 }, function(response_data) {
- 		console.log(response_data);
+ 		console.log('/o/oauth2/token response', response_data);
  		var response_object = JSON.parse(response_data);
- 		if (response_object["error"]) {
+ 		var id_token = decode_token(response_object.id_token);
+ 		console.log('id token', id_token);
+
+ 		if (id_token.payload.cid !== oauth_settings.client_id) {
+			var locals = { error: "Invalid token", oauth_url: auth_url() };
+			res.render('error.jade', locals);
+ 		} else if (response_object["error"]) {
 			var locals = { error: response_object["error"], oauth_url: auth_url() };
 			res.render('error.jade', locals);
  		} else {

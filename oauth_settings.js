@@ -1,8 +1,12 @@
-var client = '77248705884.apps.googleusercontent.com';
-var secret = 'ldlgpt8MrzvP3VJ0XJ0vDYSx';
-var redirect = 'http://localhost:3000/oauth2callback';
+var fs = require('fs');
 
+if (fs.existsSync('./local.oauth_settings.js')) {
+	module.exports = require('./local.oauth_settings');
+} else {
+  module.exports = {
+    client_id: process.env.GOOGLE_OAUTH_CLIENT_ID,
+    client_secret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+    redirect_uri: process.env.GOOGLE_OAUTH_REDIRECT_URI
+  };
+}
 
-exports.client_id = client;
-exports.client_secret = secret;
-exports.redirect_uri = redirect;
