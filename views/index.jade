@@ -3,4 +3,19 @@ block content
   h1= title
 
 
-  a(href= oauth_url)= "Get permission"
+  ul
+    each provider in providers
+        li
+            if provider.logged_in
+                span= "Logged in with " + provider.name
+                if provider.id_token
+                    span= provider.id_token
+                else
+                    span No id token
+
+                if provider.profile
+                    span= provider.profile
+                else
+                    a(href= provider.fetch_profile)= "Fetch profile"
+            else
+                a(href= provider.url)= "Log in with " + provider.name

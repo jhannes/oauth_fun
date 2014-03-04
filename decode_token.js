@@ -1,4 +1,6 @@
 module.exports = function (token) {
+    if (!token) return;
+
     var segments = token.split('.');
 
     if (segments.length !== 3) {
