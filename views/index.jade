@@ -17,5 +17,8 @@ block content
                     span= provider.profile
                 else
                     a(href= provider.fetch_profile)= "Fetch profile"
-            else
+            else if provider.url
                 a(href= provider.url)= "Log in with " + provider.name
+            else
+                span= "Missing configuration for " + provider.name + ". "
+                a(href= provider.client_signup_link)= "Register your client."

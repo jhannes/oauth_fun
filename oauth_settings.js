@@ -9,6 +9,7 @@ var defaults = {};
 
 defaults.facebook = {
   name: 'Facebook',
+  client_signup_link: 'https://developers.facebook.com/',
   client_id: process.env.FACEBOOK_OAUTH_CLIENT_ID,
   client_secret: process.env.FACEBOOK_OAUTH_CLIENT_SECRET,
   redirect_uri: process.env.FACEBOOK_OAUTH_REDIRECT_URI,
@@ -26,6 +27,7 @@ defaults.facebook = {
 
 defaults.google = {
   name: 'Google',
+  client_signup_link: 'https://console.developers.google.com/project',
   client_id: process.env.GOOGLE_OAUTH_CLIENT_ID,
   client_secret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
   redirect_uri: process.env.GOOGLE_OAUTH_REDIRECT_URI,
@@ -42,6 +44,7 @@ defaults.google = {
 
 defaults.linkedin = {
   name: 'LinkedIn',
+  client_signup_link: 'https://www.linkedin.com/secure/developer?newapp=',
   client_id: process.env.LINKEDIN_OAUTH_CLIENT_ID,
   client_secret: process.env.LINKEDIN_OAUTH_CLIENT_SECRET,
   redirect_uri: process.env.LINKEDIN_OAUTH_REDIRECT_URI,
@@ -56,7 +59,9 @@ defaults.linkedin = {
   }
 };
 
+
 for (var provider in defaults) {
+  module.exports[provider] = module.exports[provider] || {};
   for (var key in defaults[provider]) {
     module.exports[provider][key] = module.exports[provider][key] || defaults[provider][key];
   }

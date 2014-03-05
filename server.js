@@ -1,3 +1,5 @@
+"use strict";
+
 var express = require('express');
 var app = express();
 
@@ -28,11 +30,14 @@ var https_request = function(options, callback) {
   return request;
 };
 
-var auth_url = function(provider) {
+var auth_url = function(provider, req) {
+  if (!oauth_settings[provider].client_id) return null;
+  var default_redirect = req.protocol + '://' + req.get('host') + '/oauth2callback';
+
   var parts = url.parse(oauth_settings[provider].auth_url, true);
   parts.query['response_type'] = 'code';
   parts.query['client_id'] = oauth_settings[provider].client_id;
-  parts.query['redirect_uri'] = oauth_settings[provider].redirect_uri;
+  parts.query['redirect_uri'] = oauth_settings[provider].redirect_uri || default_redirect;
   parts.query['scope'] = oauth_settings[provider].scope;
   parts.query['state'] = provider + ' random-123';
   return url.format(parts);
@@ -73,7 +78,7 @@ app.get('/', function(req, res) {
 
   var providers = [];
   for (var p in oauth_settings) {
-    var entry = {name: oauth_settings[p].name, url: auth_url(p)};
+    var entry = {name: oauth_settings[p].name, url: auth_url(p, req), client_signup_link: oauth_settings[p].client_signup_link };
     entry.fetch_profile = '/fetch_profile?provider=' + p;
     entry.logged_in = !!req.session['authentication'][p];
     if (req.session['authentication'][p]) {
@@ -96,6 +101,8 @@ app.get('/', function(req, res) {
 
 
 app.get('/oauth2callback', function(req, res) {
+  var default_redirect = req.protocol + '://' + req.get('host') + '/oauth2callback';
+
   req.session['authentication'] = req.session['authentication'] || {};
   console.log('/oauth2callback url', req.url);
 
@@ -107,7 +114,7 @@ app.get('/oauth2callback', function(req, res) {
     code: code,
     client_id: oauth_settings[provider].client_id,
     client_secret: oauth_settings[provider].client_secret,
-    redirect_uri: oauth_settings[provider].redirect_uri,
+    redirect_uri: oauth_settings[provider].redirect_uri || default_redirect,
     grant_type: 'authorization_code',
   };
 
@@ -127,7 +134,7 @@ app.get('/oauth2callback', function(req, res) {
     }
 
     if (response_object["error"]) {
-      var locals = { error: response_object["error"], oauth_url: auth_url(provider) };
+      var locals = { error: response_object["error"]["message"], oauth_url: auth_url(provider, req) };
       res.render('error.jade', locals);
       return;
     }
@@ -142,3 +149,5 @@ app.get('/oauth2callback', function(req, res) {
 });
 
 var server = app.listen(process.env.PORT || 3000);
+console.log("started at port", server.address().port);
+
